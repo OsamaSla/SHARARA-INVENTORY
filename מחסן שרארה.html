@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מחסן שרארה v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--brd:#2a3044;--txt:#cbd5e1;--mut:#64748b;--ci:#f59e0b;--ct:#3b82f6;--cr:#22c55e;--cc:#a855f7;--ce:#f97316}
+*{font-family:'Heebo',sans-serif;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);min-height:100vh;display:flex;font-size:14px;overflow-x:hidden}
+.vw{display:none}.vw.on{display:block;animation:fi .22s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.nb{width:100%;text-align:right;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--mut);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px}
+.nb:hover{background:rgba(255,255,255,.05);color:var(--txt)}.nb.on{background:color-mix(in srgb,var(--ac) 18%,transparent);color:var(--ac);font-weight:700}
+.pill{cursor:pointer;padding:4px 13px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--brd);background:var(--card);color:var(--mut);white-space:nowrap;transition:.2s;user-select:none}
+.pill:hover{color:var(--txt)}.pill.on{background:var(--ci);border-color:var(--ci);color:#000}
+.mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;align-items:center;justify-content:center;backdrop-filter:blur(3px)}.mb.on{display:flex}
+.mx{background:var(--card);border:1px solid #374151;border-radius:12px;padding:24px;width:380px;max-width:95vw;animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+input,select,textarea{background:var(--bg)!important;border:1px solid var(--brd)!important;color:#fff!important;padding:8px 11px!important;border-radius:6px!important;width:100%!important;font-family:Heebo,sans-serif!important;outline:none!important;transition:.2s!important}
+input:focus,select:focus,textarea:focus{border-color:#475569!important}
+.ti{background:transparent!important;border:none!important;padding:4px 6px!important;text-align:right;width:auto!important}.ti:focus{background:var(--bg)!important;box-shadow:0 0 0 1px var(--ct)!important;border-radius:4px!important}
+th{background:#12151e;padding:11px 12px;font-size:12px;font-weight:600;color:var(--mut);border-bottom:1px solid var(--brd);position:sticky;top:0;z-index:5;text-align:right}
+tr{border-bottom:1px solid var(--brd);transition:.15s}tr:last-child{border:none}tr:hover{background:rgba(255,255,255,.04)}tr:nth-child(even){background:rgba(255,255,255,.02)}
+td{padding:9px 12px;vertical-align:middle}
+.bdg{position:absolute;top:7px;left:7px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+.bl{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444}
+.bz{background:rgba(239,68,68,.3);border:1px solid #ef4444;color:#fca5a5}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;pointer-events:none;display:flex;flex-direction:column;gap:8px;align-items:center}
+.tm{padding:9px 20px;border-radius:8px;font-weight:600;font-size:13px;background:var(--card);border:1px solid #374151;animation:tIn .3s ease,tOut .3s 2.2s forwards}
+.tm.ok{border-color:rgba(34,197,94,.5);color:#22c55e}.tm.er{border-color:rgba(239,68,68,.5);color:#ef4444}
+@keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes tOut{to{opacity:0}}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+</style></head>
+<body class="min-h-screen flex text-sm">
+<aside class="flex flex-col h-screen sticky top-0 flex-shrink-0" style="width:210px;background:var(--card);border-left:1px solid var(--brd)">
+  <div class="p-5 border-b font-black text-white text-lg flex gap-2 items-center" style="border-color:var(--brd)">🏭 <span style="color:var(--ci)">מחסן</span> שרארה</div>
+  <nav class="p-2 flex flex-col gap-1 flex-1">
+    <button class="nb on" style="--ac:var(--ci)" data-v="Items" onclick="R.go('Items')">📦 ניהול פריטים</button>
+    <button class="nb" style="--ac:var(--ct)" data-v="Transactions" onclick="R.go('Transactions')">📑 יומן ניפוקים</button>
+    <button class="nb" style="--ac:var(--cr)" data-v="Restocks" onclick="R.go('Restocks')">📥 כניסות מלאי</button>
+    <button class="nb" style="--ac:var(--cc)" data-v="Categories" onclick="R.go('Categories')">🏷️ קטגוריות</button>
+    <button class="nb" style="--ac:var(--ce)" data-v="Employees" onclick="R.go('Employees')">👥 עובדים</button>
+  </nav>
+  <div class="p-4 text-xs" style="color:var(--mut);border-top:1px solid var(--brd)">מחסן שרארה v2.0</div>
+</aside>
+<div class="flex-1 flex flex-col" style="overflow:hidden;min-height:100vh">
+  <header class="flex items-center gap-3 px-5 sticky top-0 z-40 flex-shrink-0" style="height:56px;background:var(--card);border-bottom:1px solid var(--brd)">
+    <h1 id="vT" class="font-black text-base" style="color:var(--ci)">📦 ניהול פריטים</h1>
+    <button id="btnNew" onclick="U.openItemModal()" class="text-xs font-bold text-white px-4 py-1.5 rounded-lg hover:brightness-110 transition-all" style="background:var(--cr)">+ חדש</button>
+    <div class="flex-1"></div>
+    <select id="sSort" class="!w-auto !text-xs !py-1.5 !px-2" onchange="U.ri()"><option value="name">שם (א-ת)</option><option value="sl">מלאי נמוך</option><option value="sh">מלאי גבוה</option></select>
+    <button onclick="S.undo()" class="text-xs px-3 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--txt)">↩ UNDO</button>
+    <button onclick="S.redo()" class="text-xs px-3 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--txt)">↪ REDO</button>
+    <input id="srch" type="search" placeholder="חיפוש..." oninput="U.ri()" class="!w-36 !text-xs">
+  </header>
+  <div id="fbar" class="flex gap-2 overflow-x-auto p-2.5 flex-shrink-0" style="background:var(--bg);border-bottom:1px solid var(--brd)"></div>
+  <main class="flex-1 overflow-auto">
+    <div id="vi-Items" class="vw on p-5"><div id="igrid" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(158px,1fr))"></div></div>
+    <div id="vi-Transactions" class="vw"><div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)"><table class="w-full"><thead><tr><th>תמונה</th><th>תאריך</th><th>עובד</th><th>פריט</th><th>כמות</th><th>הערות</th><th style="text-align:center">🗑</th></tr></thead><tbody id="bt"></tbody></table></div></div>
+    <div id="vi-Restocks" class="vw"><div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)"><table class="w-full"><thead><tr><th>תמונה</th><th>תאריך</th><th>פריט</th><th>כמות</th><th>הערות</th><th style="text-align:center">🗑</th></tr></thead><tbody id="br"></tbody></table></div></div>
+    <div id="vi-Categories" class="vw p-5">
+      <div class="flex gap-2 mb-5 max-w-md"><input id="nCat" placeholder="קטגוריה חדשה..."><button onclick="A.addList('subCategories','nCat')" class="px-5 py-2 rounded-lg font-bold text-white flex-shrink-0 hover:brightness-110" style="background:var(--cc)">הוסף</button></div>
+      <div id="lCat" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))"></div>
+    </div>
+    <div id="vi-Employees" class="vw p-5">
+      <div class="flex gap-2 mb-5 max-w-md"><input id="nEmp" placeholder="עובד חדש..."><button onclick="A.addList('employees','nEmp')" class="px-5 py-2 rounded-lg font-bold text-white flex-shrink-0 hover:brightness-110" style="background:var(--ce)">הוסף</button></div>
+      <div id="lEmp" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))"></div>
+    </div>
+  </main>
+</div>
+<div id="mItem" class="mb"><div class="mx">
+  <h2 class="text-white font-black text-base mb-5">✏️ ניהול פריט</h2>
+  <input type="hidden" id="eKey">
+  <div class="flex flex-col gap-3">
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">שם פריט</label><input id="iName" placeholder="שם..."></div>
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">מזהה ID</label><input id="iId" placeholder="ID..."></div>
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">קטגוריה</label><select id="iCat"></select></div>
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">תמונה</label><input type="file" id="iImg" accept="image/*"></div>
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">מלאי</label><input type="number" id="iStock" placeholder="0"></div>
+  </div>
+  <div class="flex gap-2 mt-5">
+    <button onclick="A.saveItem()" class="flex-1 py-2.5 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--cr)">שמור</button>
+    <button onclick="U.cm()" class="flex-1 py-2.5 rounded-lg font-semibold" style="background:#1e2333;color:var(--txt)">ביטול</button>
+  </div>
+</div></div>
+<div id="mAct" class="mb"><div class="mx">
+  <h2 id="aTitle" class="text-white font-black text-base mb-5">פעולה</h2>
+  <div class="flex flex-col gap-3">
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">תאריך</label><input type="date" id="aDate"></div>
+    <div id="empW"><label class="block text-xs font-bold mb-1" style="color:var(--mut)">עובד</label><input list="eDL" id="aEmp" placeholder="בחר עובד..."></div>
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">כמות</label><input type="number" id="aQty" placeholder="0"></div>
+    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">הערות</label><textarea id="aNotes" rows="2" placeholder="הערות..."></textarea></div>
+  </div>
+  <div class="flex gap-2 mt-5">
+    <button id="cBtn" onclick="A.confirmMove()" class="flex-1 py-2.5 rounded-lg font-bold text-white hover:brightness-110"></button>
+    <button onclick="U.cm()" class="flex-1 py-2.5 rounded-lg font-semibold" style="background:#1e2333;color:var(--txt)">ביטול</button>
+  </div>
+</div></div>
+<div id="mLB" class="mb" onclick="U.cm()"><img id="lbI" src="" onclick="event.stopPropagation()" style="max-width:85vw;max-height:85vh;border-radius:12px;object-fit:contain"></div>
+<datalist id="eDL"></datalist>
+<div id="toast"></div>
+<script>
+['subCategories','employees'].forEach(k=>{const r=JSON.parse(localStorage.getItem(k));if(Array.isArray(r)){const c=r.filter(v=>typeof v==='string'&&v.trim()&&v!=='[object Object]');if(c.length!==r.length)localStorage.setItem(k,JSON.stringify(c));}});
+const S={
+  d:{
+    items:JSON.parse(localStorage.getItem('items'))||[],
+    transactions:JSON.parse(localStorage.getItem('transactions'))||[],
+    restocks:JSON.parse(localStorage.getItem('restocks'))||[],
+    employees:JSON.parse(localStorage.getItem('employees'))||['עזאם שרארה'],
+    subCategories:JSON.parse(localStorage.getItem('subCategories'))||['כללי']
+  },
+  un:[],re:[],
+  save(snap=true){
+    if(snap){this.un.push(JSON.stringify(this.d));if(this.un.length>50)this.un.shift();this.re=[];}
+    Object.keys(this.d).forEach(k=>localStorage.setItem(k,JSON.stringify(this.d[k])));
+  },
+  undo(){if(this.un.length){this.re.push(JSON.stringify(this.d));this.d=JSON.parse(this.un.pop());this.save(false);R.refresh();}},
+  redo(){if(this.re.length){this.un.push(JSON.stringify(this.d));this.d=JSON.parse(this.re.pop());this.save(false);R.refresh();}}
+};
+const T={show(m,t='ok'){const e=document.createElement('div');e.className='tm '+t;e.textContent=m;document.getElementById('toast').appendChild(e);setTimeout(()=>e.remove(),2600);}};
+const VIEWS={
+  Items:       {title:'📦 ניהול פריטים', color:'var(--ci)',showNew:true},
+  Transactions:{title:'📑 יומן ניפוקים',color:'var(--ct)',showNew:false},
+  Restocks:    {title:'📥 כניסות מלאי', color:'var(--cr)',showNew:false},
+  Categories:  {title:'🏷️ קטגוריות',    color:'var(--cc)',showNew:false},
+  Employees:   {title:'👥 עובדים',       color:'var(--ce)',showNew:false}
+};
+const R={
+  cur:'Items',
+  go(v){
+    this.cur=v;
+    document.querySelectorAll('.vw').forEach(s=>s.classList.remove('on'));
+    document.getElementById('vi-'+v).classList.add('on');
+    document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+    const c=VIEWS[v];
+    document.getElementById('vT').textContent=c.title;
+    document.getElementById('vT').style.color=c.color;
+    document.getElementById('btnNew').style.display=c.showNew?'':'none';
+    const items=v==='Items';
+    ['sSort','fbar','srch'].forEach(id=>document.getElementById(id).style.display=items?'':'none');
+    this.refresh();
+  },
+  refresh(){
+    const v=this.cur;
+    if(v==='Items'){U.rf();U.ri();}
+    else if(v==='Transactions')U.rl('Transactions','bt');
+    else if(v==='Restocks')U.rl('Restocks','br');
+    else if(v==='Categories')U.rls('subCategories','lCat',true);
+    else if(v==='Employees')U.rls('employees','lEmp',false);
+    U.udl();
+  }
+};
+const U={
+  sel:'הכל',aid:'',mode:'',
+  rf(){
+    document.getElementById('fbar').innerHTML=
+      ['הכל',...S.d.subCategories].map(c=>`<div onclick="U.sel='${c}';U.ri()" class="pill${this.sel===c?' on':''}">${c}</div>`).join('');
+  },
+  ri(){
+    const q=document.getElementById('srch').value.toLowerCase();
+    const so=document.getElementById('sSort').value;
+    let list=[...S.d.items].filter(i=>
+      (i.name.toLowerCase().includes(q)||i.id.toLowerCase().includes(q))&&
+      (this.sel==='הכל'||i.category===this.sel)
+    );
+    if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+    if(so==='sl')list.sort((a,b)=>a.remaining-b.remaining);
+    if(so==='sh')list.sort((a,b)=>b.remaining-a.remaining);
+    document.getElementById('igrid').innerHTML=list.length?list.map(i=>{
+      const iss=S.d.transactions.filter(t=>t.item===i.name).reduce((s,t)=>s+(parseInt(t.quantity)||0),0);
+      const bdg=i.remaining===0?'<span class="bdg bz">אזל!</span>':i.remaining<=3?'<span class="bdg bl">נמוך</span>':'';
+      const img=i.img
+        ?`<img src="${i.img}" onclick="U.lb('${i.img}')" class="h-16 w-16 mx-auto rounded-lg object-cover mb-2 cursor-pointer block hover:opacity-80 transition-opacity">`
+        :`<div class="h-16 w-16 mx-auto rounded-lg mb-2 flex items-center justify-center text-2xl font-black" style="background:#1e2333;color:var(--mut)">${i.name[0]||'?'}</div>`;
+      return `<div class="rounded-xl p-3 text-center relative transition-all hover:-translate-y-0.5 hover:shadow-lg" style="background:var(--card);border:1px solid var(--brd)" onmouseenter="this.style.borderColor='#3a4460'" onmouseleave="this.style.borderColor='var(--brd)'">
+        ${bdg}${img}
+        <div class="font-bold text-white text-xs truncate mb-0.5">${i.name}</div>
+        <div class="text-xs mb-2" style="color:var(--ct)">${i.category||''}</div>
+        <div class="flex justify-around text-xs border-t pt-2 mb-2" style="border-color:var(--brd);color:var(--mut)">
+          <div>מלאי<br><b class="text-white text-sm">${i.remaining}</b></div>
+          <div>הונפק<br><b class="text-white text-sm">${iss}</b></div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="U.openAct('${i.id}','out')" class="flex-1 py-1.5 rounded-lg text-xs font-bold" style="background:rgba(59,130,246,.15);color:var(--ct);border:1px solid rgba(59,130,246,.3)">ניפוק</button>
+          <button onclick="U.openAct('${i.id}','in')" class="px-2.5 py-1.5 rounded-lg font-bold" style="background:rgba(34,197,94,.15);color:var(--cr);border:1px solid rgba(34,197,94,.3)">+</button>
+          <button onclick="U.openItemModal('${i.id}')" class="px-2 py-1.5 rounded-lg" style="background:var(--bg);color:var(--mut);border:1px solid var(--brd)">⚙️</button>
+        </div>
+      </div>`;
+    }).join(''):`<div class="col-span-full text-center py-16" style="color:var(--mut)"><div class="text-5xl mb-3">📦</div><div class="font-semibold">אין פריטים להצגה</div></div>`;
+  },
+  rl(type,tid){
+    const list=S.d[type.toLowerCase()];
+    document.getElementById(tid).innerHTML=list.length?list.map((e,idx)=>{
+      const it=S.d.items.find(i=>i.name===e.item);
+      const img=it?.img?`<img src="${it.img}" onclick="U.lb('${it.img}')" class="h-8 w-8 rounded object-cover cursor-pointer mx-auto hover:opacity-80">`:'';
+      const ec=type==='Transactions'?`<td><input class="ti w-28" value="${e.employee||''}" onchange="A.eLog('${type}',${idx},'employee',this.value)"></td>`:'';
+      const qc=type==='Transactions'?'var(--ct)':'var(--cr)';
+      return `<tr>
+        <td class="text-center">${img}</td>
+        <td><input class="ti w-24" value="${e.date}" onchange="A.eLog('${type}',${idx},'date',this.value)"></td>
+        ${ec}
+        <td class="font-bold">${e.item}</td>
+        <td><input type="number" class="ti w-16 font-bold" style="color:${qc}" value="${e.quantity}" onchange="A.eLog('${type}',${idx},'quantity',this.value)"></td>
+        <td><input class="ti text-xs" style="font-style:italic" value="${e.notes||''}" onchange="A.eLog('${type}',${idx},'notes',this.value)"></td>
+        <td class="text-center"><button onclick="A.dLog('${type}',${idx})" style="background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer;padding:3px 8px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--mut)'">×</button></td>
+      </tr>`;
+    }).join(''):`<tr><td colspan="7" class="text-center py-10" style="color:var(--mut)">אין רשומות</td></tr>`;
+  },
+  rls(key,lid,isCat){
+    const color=isCat?'var(--cc)':'var(--ce)';
+    document.getElementById(lid).innerHTML=S.d[key].map(val=>{
+      const cnt=isCat?S.d.items.filter(i=>i.category===val).length:S.d.transactions.filter(t=>t.employee===val).length;
+      return `<div class="flex items-center justify-between p-3 rounded-xl transition-all" style="background:var(--card);border:1px solid var(--brd)" onmouseenter="this.style.borderColor='#3a4460'" onmouseleave="this.style.borderColor='var(--brd)'">
+        <div>
+          <div class="font-bold text-white text-sm">${val}</div>
+          <div class="text-xs mt-0.5" style="color:var(--mut)">${cnt} ${isCat?'פריטים':'ניפוקים'}</div>
+        </div>
+        <button onclick="A.removeList('${key}','${val}')" style="background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;padding:2px 8px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--mut)'">×</button>
+      </div>`;
+    }).join('')||`<div class="col-span-full text-center py-10" style="color:var(--mut)">לא נמצאו פריטים</div>`;
+  },
+  udl(){
+    document.getElementById('iCat').innerHTML=S.d.subCategories.map(c=>`<option value="${c}">${c}</option>`).join('');
+    document.getElementById('eDL').innerHTML=S.d.employees.map(e=>`<option value="${e}">`).join('');
+  },
+  openItemModal(id=null){
+    const it=S.d.items.find(i=>i.id===id);
+    document.getElementById('eKey').value=id||'';
+    document.getElementById('iName').value=it?it.name:'';
+    document.getElementById('iId').value=it?it.id:'';
+    document.getElementById('iStock').value=it?it.remaining:'';
+    document.getElementById('iImg').value='';
+    this.udl();
+    document.getElementById('iCat').value=it?it.category:S.d.subCategories[0];
+    document.getElementById('mItem').classList.add('on');
+  },
+  openAct(id,mode){
+    this.aid=id;this.mode=mode;
+    const it=S.d.items.find(i=>i.id===id);
+    document.getElementById('aTitle').textContent=mode==='out'?`ניפוק: ${it.name}`:`הוספה: ${it.name}`;
+    const btn=document.getElementById('cBtn');
+    btn.textContent=mode==='out'?'בצע ניפוק':'הוסף מלאי';
+    btn.style.background=mode==='out'?'var(--ct)':'var(--cr)';
+    document.getElementById('empW').style.display=mode==='out'?'':'none';
+    document.getElementById('aDate').valueAsDate=new Date();
+    document.getElementById('aQty').value='';
+    document.getElementById('aNotes').value='';
+    document.getElementById('mAct').classList.add('on');
+  },
+  cm(){document.querySelectorAll('.mb').forEach(m=>m.classList.remove('on'));},
+  lb(src){document.getElementById('lbI').src=src;document.getElementById('mLB').classList.add('on');}
+};
+const A={
+  saveItem(){
+    const key=document.getElementById('eKey').value;
+    const file=document.getElementById('iImg').files[0];
+    const data={
+      id:document.getElementById('iId').value.trim(),
+      name:document.getElementById('iName').value.trim(),
+      category:document.getElementById('iCat').value,
+      remaining:parseInt(document.getElementById('iStock').value)||0
+    };
+    if(!data.name||!data.id){T.show('נא למלא שם ומזהה','er');return;}
+    const finalize=img=>{
+      S.save();
+      if(key){
+        const idx=S.d.items.findIndex(i=>i.id===key);
+        S.d.items[idx]={...S.d.items[idx],...data};
+        if(img)S.d.items[idx].img=img;
+      } else {
+        if(S.d.items.find(i=>i.id===data.id)){T.show('מזהה כבר קיים','er');return;}
+        if(img)data.img=img;
+        S.d.items.push(data);
+      }
+      U.cm();S.save(false);T.show(key?'פריט עודכן':'פריט נוסף');R.refresh();
+    };
+    if(file){const r=new FileReader();r.onload=e=>finalize(e.target.result);r.readAsDataURL(file);}else finalize();
+  },
+  confirmMove(){
+    const qty=parseInt(document.getElementById('aQty').value);
+    if(!qty||qty<=0){T.show('כמות לא תקינה','er');return;}
+    const it=S.d.items.find(i=>i.id===U.aid);
+    if(!it){T.show('פריט לא נמצא','er');return;}
+    const date=new Date(document.getElementById('aDate').value).toLocaleDateString('he-IL');
+    S.save();
+    if(U.mode==='out'){
+      if(it.remaining<qty){T.show('אין מספיק מלאי!','er');return;}
+      it.remaining-=qty;
+      S.d.transactions.unshift({date,item:it.name,quantity:qty,employee:document.getElementById('aEmp').value||'כללי',notes:document.getElementById('aNotes').value});
+      T.show(`נוּפק ${qty} יח' מ-${it.name}`);
+    } else {
+      it.remaining+=qty;
+      S.d.restocks.unshift({date,item:it.name,quantity:qty,notes:document.getElementById('aNotes').value});
+      T.show(`נוסף ${qty} יח' ל-${it.name}`);
+    }
+    U.cm();S.save(false);R.refresh();
+  },
+  eLog(type,idx,field,value){
+    S.save();
+    const list=S.d[type.toLowerCase()];
+    const entry=list[idx];
+    const it=S.d.items.find(i=>i.name===entry.item);
+    if(field==='quantity'){
+      const val=parseInt(value)||0;const diff=val-entry.quantity;
+      if(it){if(type==='Transactions')it.remaining-=diff;else it.remaining+=diff;}
+      entry.quantity=val;
+    } else entry[field]=value;
+    S.save(false);
+  },
+  dLog(type,idx){
+    if(!confirm('למחוק רשומה זו?'))return;
+    S.save();
+    const list=S.d[type.toLowerCase()];
+    const entry=list[idx];
+    const it=S.d.items.find(i=>i.name===entry.item);
+    if(it)it.remaining+=(type==='Transactions'?entry.quantity:-entry.quantity);
+    list.splice(idx,1);
+    S.save(false);R.refresh();T.show('רשומה נמחקה');
+  },
+  addList(key,inputId){
+    const val=document.getElementById(inputId).value.trim();
+    if(!val||typeof val!=='string'){T.show('ערך לא תקין','er');return;}
+    if(S.d[key].includes(val)){T.show('כבר קיים','er');return;}
+    S.save();S.d[key].push(val);
+    document.getElementById(inputId).value='';
+    S.save(false);R.refresh();T.show('נוסף בהצלחה');
+  },
+  removeList(key,val){
+    if(!confirm(`למחוק "${val}"?`))return;
+    S.save();
+    S.d[key]=S.d[key].filter(x=>x!==val);
+    if(key==='subCategories'&&U.sel===val)U.sel='הכל';
+    S.save(false);R.refresh();T.show('נמחק');
+  }
+};
+window.addEventListener('keydown',e=>{if(e.key==='Escape')U.cm();});
+window.onload=()=>R.go('Items');
+</script>
+</body></html>
