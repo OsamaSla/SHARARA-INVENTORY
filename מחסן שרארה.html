@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מחסן שרארה v2</title>
+<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מחסן שרארה v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -236,6 +236,7 @@ const U={
     
     if(this.vMode==='list'){
       document.getElementById('igrid').className="rounded-xl overflow-hidden";
+      document.getElementById('igrid').style.gridTemplateColumns="";
       document.getElementById('igrid').style.border="1px solid var(--brd)";
       document.getElementById('igrid').innerHTML=list.length?`<table class="w-full"><thead><tr><th>תמונה</th><th>מזהה</th><th>שם פריט</th><th>קטגוריה</th><th>מלאי</th><th>הונפק</th><th style="text-align:center">פעולות</th></tr></thead><tbody>`+list.map(i=>{
         const iss=S.d.transactions.filter(t=>t.item===i.name).reduce((s,t)=>s+(parseInt(t.quantity)||0),0);
@@ -258,6 +259,7 @@ const U={
       }).join('')+`</tbody></table>`:`<div class="text-center py-16" style="color:var(--mut)">אין פריטים להצגה</div>`;
     } else {
       document.getElementById('igrid').className="grid gap-3";
+      document.getElementById('igrid').style.gridTemplateColumns="repeat(auto-fill,minmax(158px,1fr))";
       document.getElementById('igrid').style.border="none";
       document.getElementById('igrid').innerHTML=list.length?list.map(i=>{
         const iss=S.d.transactions.filter(t=>t.item===i.name).reduce((s,t)=>s+(parseInt(t.quantity)||0),0);
