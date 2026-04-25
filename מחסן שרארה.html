@@ -9,7 +9,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;display:flex;font-si
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 .nb{width:100%;text-align:right;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--mut);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px}
 .nb:hover{background:rgba(255,255,255,.05);color:var(--txt)}.nb.on{background:color-mix(in srgb,var(--ac) 18%,transparent);color:var(--ac);font-weight:700}
-.pill{cursor:pointer;padding:4px 13px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--brd);background:var(--card);color:var(--mut);white-space:nowrap;transition:.2s;user-select:none}
+.pill{cursor:move;padding:4px 13px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--brd);background:var(--card);color:var(--mut);white-space:nowrap;transition:.2s;user-select:none}
 .pill:hover{color:var(--txt)}.pill.on{background:var(--ci);border-color:var(--ci);color:#000}
 .mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;align-items:center;justify-content:center;backdrop-filter:blur(3px)}.mb.on{display:flex}
 .mx{background:var(--card);border:1px solid #374151;border-radius:12px;padding:24px;width:380px;max-width:95vw;animation:mi .2s ease}
@@ -21,6 +21,7 @@ th{background:#12151e;padding:11px 12px;font-size:12px;font-weight:600;color:var
 tr{border-bottom:1px solid var(--brd);transition:.15s}tr:last-child{border:none}tr:hover{background:rgba(255,255,255,.04)}tr:nth-child(even){background:rgba(255,255,255,.02)}
 td{padding:9px 12px;vertical-align:middle}
 .bdg{position:absolute;top:7px;left:7px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+.bdg.lst{position:relative;top:0;left:0;display:inline-block;margin-right:8px}
 .bl{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444}
 .bz{background:rgba(239,68,68,.3);border:1px solid #ef4444;color:#fca5a5}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;pointer-events:none;display:flex;flex-direction:column;gap:8px;align-items:center}
@@ -28,8 +29,9 @@ td{padding:9px 12px;vertical-align:middle}
 .tm.ok{border-color:rgba(34,197,94,.5);color:#22c55e}.tm.er{border-color:rgba(239,68,68,.5);color:#ef4444}
 @keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes tOut{to{opacity:0}}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
-</style></head>
-<body class="min-h-screen flex text-sm">
+.hdr-sel{appearance:none;background:transparent!important;border:none!important;color:var(--mut)!important;font-weight:bold!important;padding:0!important;cursor:pointer;width:auto!important}
+.hdr-sel option{background:var(--card);color:var(--txt)}
+</style></head><body class="min-h-screen flex text-sm">
 <aside class="flex flex-col h-screen sticky top-0 flex-shrink-0" style="width:210px;background:var(--card);border-left:1px solid var(--brd)">
   <div class="p-5 border-b font-black text-white text-lg flex gap-2 items-center" style="border-color:var(--brd)">🏭 <span style="color:var(--ci)">מחסן</span> שרארה</div>
   <nav class="p-2 flex flex-col gap-1 flex-1">
@@ -39,30 +41,80 @@ td{padding:9px 12px;vertical-align:middle}
     <button class="nb" style="--ac:var(--cc)" data-v="Categories" onclick="R.go('Categories')">🏷️ קטגוריות</button>
     <button class="nb" style="--ac:var(--ce)" data-v="Employees" onclick="R.go('Employees')">👥 עובדים</button>
   </nav>
-  <div class="p-4 text-xs" style="color:var(--mut);border-top:1px solid var(--brd)">מחסן שרארה v2.0</div>
+  <div class="p-4 text-xs" style="color:var(--mut);border-top:1px solid var(--brd)">מחסן שרארה v2.1</div>
 </aside>
 <div class="flex-1 flex flex-col" style="overflow:hidden;min-height:100vh">
   <header class="flex items-center gap-3 px-5 sticky top-0 z-40 flex-shrink-0" style="height:56px;background:var(--card);border-bottom:1px solid var(--brd)">
     <h1 id="vT" class="font-black text-base" style="color:var(--ci)">📦 ניהול פריטים</h1>
     <button id="btnNew" onclick="U.openItemModal()" class="text-xs font-bold text-white px-4 py-1.5 rounded-lg hover:brightness-110 transition-all" style="background:var(--cr)">+ חדש</button>
     <div class="flex-1"></div>
+    <div id="vToggle" class="flex bg-[#1a1d27] rounded-lg overflow-hidden border border-[#2a3044]">
+      <button id="vGrid" onclick="U.setView('grid')" class="px-2 py-1 transition-all" style="background:var(--ci);color:#000">🔲</button>
+      <button id="vList" onclick="U.setView('list')" class="px-2 py-1 transition-all" style="color:var(--mut)">☰</button>
+    </div>
     <select id="sSort" class="!w-auto !text-xs !py-1.5 !px-2" onchange="U.ri()"><option value="name">שם (א-ת)</option><option value="sl">מלאי נמוך</option><option value="sh">מלאי גבוה</option></select>
+    <button onclick="document.getElementById('impFile').click()" class="text-xs px-2 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--txt)">📥 ייבוא</button>
+    <button onclick="A.exportJson()" class="text-xs px-2 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--txt)">📤 ייצוא</button>
+    <input type="file" id="impFile" style="display:none" accept=".json" onchange="A.importJson(event)">
     <button onclick="S.undo()" class="text-xs px-3 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--txt)">↩ UNDO</button>
     <button onclick="S.redo()" class="text-xs px-3 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--txt)">↪ REDO</button>
-    <input id="srch" type="search" placeholder="חיפוש..." oninput="U.ri()" class="!w-36 !text-xs">
+    <input id="srch" type="search" placeholder="חיפוש פריט..." oninput="U.ri()" class="!w-36 !text-xs">
   </header>
   <div id="fbar" class="flex gap-2 overflow-x-auto p-2.5 flex-shrink-0" style="background:var(--bg);border-bottom:1px solid var(--brd)"></div>
   <main class="flex-1 overflow-auto">
-    <div id="vi-Items" class="vw on p-5"><div id="igrid" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(158px,1fr))"></div></div>
-    <div id="vi-Transactions" class="vw"><div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)"><table class="w-full"><thead><tr><th>תמונה</th><th>תאריך</th><th>עובד</th><th>פריט</th><th>כמות</th><th>הערות</th><th style="text-align:center">🗑</th></tr></thead><tbody id="bt"></tbody></table></div></div>
-    <div id="vi-Restocks" class="vw"><div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)"><table class="w-full"><thead><tr><th>תמונה</th><th>תאריך</th><th>פריט</th><th>כמות</th><th>הערות</th><th style="text-align:center">🗑</th></tr></thead><tbody id="br"></tbody></table></div></div>
-    <div id="vi-Categories" class="vw p-5">
-      <div class="flex gap-2 mb-5 max-w-md"><input id="nCat" placeholder="קטגוריה חדשה..."><button onclick="A.addList('subCategories','nCat')" class="px-5 py-2 rounded-lg font-bold text-white flex-shrink-0 hover:brightness-110" style="background:var(--cc)">הוסף</button></div>
-      <div id="lCat" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))"></div>
+    <div id="vi-Items" class="vw on p-5"><div id="igrid"></div></div>
+    
+    <div id="vi-Transactions" class="vw">
+      <div class="flex items-center gap-3 p-4 border-b" style="border-color:var(--brd);background:var(--card)">
+        <input id="srchTx" type="search" placeholder="חיפוש ביומן ניפוקים..." oninput="U.rl('Transactions','bt')" class="!w-64 !text-xs">
+      </div>
+      <div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)">
+        <table class="w-full"><thead><tr>
+          <th>תמונה</th>
+          <th>תאריך</th>
+          <th id="thEmpTx">עובד</th>
+          <th id="thItmTx">פריט</th>
+          <th>כמות</th>
+          <th>הערות</th>
+          <th style="text-align:center">🗑</th>
+        </tr></thead><tbody id="bt"></tbody></table>
+      </div>
     </div>
+    
+    <div id="vi-Restocks" class="vw">
+      <div class="flex items-center gap-3 p-4 border-b" style="border-color:var(--brd);background:var(--card)">
+        <input id="srchRe" type="search" placeholder="חיפוש בכניסות מלאי..." oninput="U.rl('Restocks','br')" class="!w-64 !text-xs">
+      </div>
+      <div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)">
+        <table class="w-full"><thead><tr>
+          <th>תמונה</th>
+          <th>תאריך</th>
+          <th id="thItmRe">פריט</th>
+          <th>כמות</th>
+          <th>הערות</th>
+          <th style="text-align:center">🗑</th>
+        </tr></thead><tbody id="br"></tbody></table>
+      </div>
+    </div>
+    
+    <div id="vi-Categories" class="vw p-5">
+      <div class="flex gap-2 mb-5 max-w-md items-center">
+        <input id="nCat" placeholder="קטגוריה חדשה...">
+        <button onclick="A.addList('subCategories','nCat')" class="px-5 py-2 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--cc)">הוסף</button>
+        <div class="flex-1"></div>
+        <input id="srchCat" type="search" placeholder="חיפוש קטגוריה..." oninput="U.rls('subCategories','lCat',true)" class="!w-40 !text-xs">
+      </div>
+      <div id="lCat" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))"></div>
+    </div>
+    
     <div id="vi-Employees" class="vw p-5">
-      <div class="flex gap-2 mb-5 max-w-md"><input id="nEmp" placeholder="עובד חדש..."><button onclick="A.addList('employees','nEmp')" class="px-5 py-2 rounded-lg font-bold text-white flex-shrink-0 hover:brightness-110" style="background:var(--ce)">הוסף</button></div>
-      <div id="lEmp" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))"></div>
+      <div class="flex gap-2 mb-5 max-w-md items-center">
+        <input id="nEmp" placeholder="עובד חדש...">
+        <button onclick="A.addList('employees','nEmp')" class="px-5 py-2 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--ce)">הוסף</button>
+        <div class="flex-1"></div>
+        <input id="srchEmp" type="search" placeholder="חיפוש עובד..." oninput="U.rls('employees','lEmp',false)" class="!w-40 !text-xs">
+      </div>
+      <div id="lEmp" class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))"></div>
     </div>
   </main>
 </div>
@@ -74,13 +126,17 @@ td{padding:9px 12px;vertical-align:middle}
     <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">מזהה ID</label><input id="iId" placeholder="ID..."></div>
     <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">קטגוריה</label><select id="iCat"></select></div>
     <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">תמונה</label><input type="file" id="iImg" accept="image/*"></div>
-    <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">מלאי</label><input type="number" id="iStock" placeholder="0"></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">מלאי נוכחי</label><input type="number" id="iStock" placeholder="0"></div>
+      <div><label class="block text-xs font-bold mb-1" style="color:var(--mut)">מינימום מלאי</label><input type="number" id="iMinStock" placeholder="0"></div>
+    </div>
   </div>
   <div class="flex gap-2 mt-5">
     <button onclick="A.saveItem()" class="flex-1 py-2.5 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--cr)">שמור</button>
     <button onclick="U.cm()" class="flex-1 py-2.5 rounded-lg font-semibold" style="background:#1e2333;color:var(--txt)">ביטול</button>
   </div>
 </div></div>
+
 <div id="mAct" class="mb"><div class="mx">
   <h2 id="aTitle" class="text-white font-black text-base mb-5">פעולה</h2>
   <div class="flex flex-col gap-3">
@@ -94,11 +150,14 @@ td{padding:9px 12px;vertical-align:middle}
     <button onclick="U.cm()" class="flex-1 py-2.5 rounded-lg font-semibold" style="background:#1e2333;color:var(--txt)">ביטול</button>
   </div>
 </div></div>
+
 <div id="mLB" class="mb" onclick="U.cm()"><img id="lbI" src="" onclick="event.stopPropagation()" style="max-width:85vw;max-height:85vh;border-radius:12px;object-fit:contain"></div>
+
 <datalist id="eDL"></datalist>
 <div id="toast"></div>
 <script>
 ['subCategories','employees'].forEach(k=>{const r=JSON.parse(localStorage.getItem(k));if(Array.isArray(r)){const c=r.filter(v=>typeof v==='string'&&v.trim()&&v!=='[object Object]');if(c.length!==r.length)localStorage.setItem(k,JSON.stringify(c));}});
+
 const S={
   d:{
     items:JSON.parse(localStorage.getItem('items'))||[],
@@ -115,7 +174,9 @@ const S={
   undo(){if(this.un.length){this.re.push(JSON.stringify(this.d));this.d=JSON.parse(this.un.pop());this.save(false);R.refresh();}},
   redo(){if(this.re.length){this.un.push(JSON.stringify(this.d));this.d=JSON.parse(this.re.pop());this.save(false);R.refresh();}}
 };
+
 const T={show(m,t='ok'){const e=document.createElement('div');e.className='tm '+t;e.textContent=m;document.getElementById('toast').appendChild(e);setTimeout(()=>e.remove(),2600);}};
+
 const VIEWS={
   Items:       {title:'📦 ניהול פריטים', color:'var(--ci)',showNew:true},
   Transactions:{title:'📑 יומן ניפוקים',color:'var(--ct)',showNew:false},
@@ -123,6 +184,7 @@ const VIEWS={
   Categories:  {title:'🏷️ קטגוריות',    color:'var(--cc)',showNew:false},
   Employees:   {title:'👥 עובדים',       color:'var(--ce)',showNew:false}
 };
+
 const R={
   cur:'Items',
   go(v){
@@ -134,8 +196,8 @@ const R={
     document.getElementById('vT').textContent=c.title;
     document.getElementById('vT').style.color=c.color;
     document.getElementById('btnNew').style.display=c.showNew?'':'none';
-    const items=v==='Items';
-    ['sSort','fbar','srch'].forEach(id=>document.getElementById(id).style.display=items?'':'none');
+    const isItm=v==='Items';
+    ['sSort','fbar','srch','vToggle'].forEach(id=>document.getElementById(id).style.display=isItm?'':'none');
     this.refresh();
   },
   refresh(){
@@ -149,10 +211,17 @@ const R={
   }
 };
 const U={
-  sel:'הכל',aid:'',mode:'',
+  sel:'הכל',aid:'',mode:'', vMode:localStorage.getItem('vMode')||'grid',
+  logFlt:{Transactions:{emp:'',itm:''},Restocks:{itm:''}},
+  setView(m){
+    this.vMode=m; localStorage.setItem('vMode',m);
+    document.getElementById('vGrid').style=m==='grid'?'background:var(--ci);color:#000':'color:var(--mut)';
+    document.getElementById('vList').style=m==='list'?'background:var(--ci);color:#000':'color:var(--mut)';
+    this.ri();
+  },
   rf(){
     document.getElementById('fbar').innerHTML=
-      ['הכל',...S.d.subCategories].map(c=>`<div onclick="U.sel='${c}';U.ri()" class="pill${this.sel===c?' on':''}">${c}</div>`).join('');
+      ['הכל',...S.d.subCategories].map(c=>`<div ${c!=='הכל'?'draggable="true" ondragstart="A.dragSt(event,\''+c+'\')" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');A.drop(event,\''+c+'\')"':''} onclick="U.sel='${c}';U.ri()" class="pill${this.sel===c?' on':''}">${c}</div>`).join('');
   },
   ri(){
     const q=document.getElementById('srch').value.toLowerCase();
@@ -164,35 +233,83 @@ const U={
     if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
     if(so==='sl')list.sort((a,b)=>a.remaining-b.remaining);
     if(so==='sh')list.sort((a,b)=>b.remaining-a.remaining);
-    document.getElementById('igrid').innerHTML=list.length?list.map(i=>{
-      const iss=S.d.transactions.filter(t=>t.item===i.name).reduce((s,t)=>s+(parseInt(t.quantity)||0),0);
-      const bdg=i.remaining===0?'<span class="bdg bz">אזל!</span>':i.remaining<=3?'<span class="bdg bl">נמוך</span>':'';
-      const img=i.img
-        ?`<img src="${i.img}" onclick="U.lb('${i.img}')" class="h-16 w-16 mx-auto rounded-lg object-cover mb-2 cursor-pointer block hover:opacity-80 transition-opacity">`
-        :`<div class="h-16 w-16 mx-auto rounded-lg mb-2 flex items-center justify-center text-2xl font-black" style="background:#1e2333;color:var(--mut)">${i.name[0]||'?'}</div>`;
-      return `<div class="rounded-xl p-3 text-center relative transition-all hover:-translate-y-0.5 hover:shadow-lg" style="background:var(--card);border:1px solid var(--brd)" onmouseenter="this.style.borderColor='#3a4460'" onmouseleave="this.style.borderColor='var(--brd)'">
-        ${bdg}${img}
-        <div class="font-bold text-white text-xs truncate mb-0.5">${i.name}</div>
-        <div class="text-xs mb-2" style="color:var(--ct)">${i.category||''}</div>
-        <div class="flex justify-around text-xs border-t pt-2 mb-2" style="border-color:var(--brd);color:var(--mut)">
-          <div>מלאי<br><b class="text-white text-sm">${i.remaining}</b></div>
-          <div>הונפק<br><b class="text-white text-sm">${iss}</b></div>
-        </div>
-        <div class="flex gap-1">
-          <button onclick="U.openAct('${i.id}','out')" class="flex-1 py-1.5 rounded-lg text-xs font-bold" style="background:rgba(59,130,246,.15);color:var(--ct);border:1px solid rgba(59,130,246,.3)">ניפוק</button>
-          <button onclick="U.openAct('${i.id}','in')" class="px-2.5 py-1.5 rounded-lg font-bold" style="background:rgba(34,197,94,.15);color:var(--cr);border:1px solid rgba(34,197,94,.3)">+</button>
-          <button onclick="U.openItemModal('${i.id}')" class="px-2 py-1.5 rounded-lg" style="background:var(--bg);color:var(--mut);border:1px solid var(--brd)">⚙️</button>
-        </div>
-      </div>`;
-    }).join(''):`<div class="col-span-full text-center py-16" style="color:var(--mut)"><div class="text-5xl mb-3">📦</div><div class="font-semibold">אין פריטים להצגה</div></div>`;
+    
+    if(this.vMode==='list'){
+      document.getElementById('igrid').className="rounded-xl overflow-hidden";
+      document.getElementById('igrid').style.border="1px solid var(--brd)";
+      document.getElementById('igrid').innerHTML=list.length?`<table class="w-full"><thead><tr><th>תמונה</th><th>מזהה</th><th>שם פריט</th><th>קטגוריה</th><th>מלאי</th><th>הונפק</th><th style="text-align:center">פעולות</th></tr></thead><tbody>`+list.map(i=>{
+        const iss=S.d.transactions.filter(t=>t.item===i.name).reduce((s,t)=>s+(parseInt(t.quantity)||0),0);
+        const min=i.minStock||0;
+        let bdg='';if(i.remaining===0)bdg='<span class="bdg lst bz">אזל!</span>';else if(i.remaining<=min)bdg='<span class="bdg lst bl">נמוך</span>';
+        const img=i.img?`<img src="${i.img}" onclick="U.lb('${i.img}')" class="h-8 w-8 rounded object-cover cursor-pointer hover:opacity-80">`:'';
+        return `<tr>
+          <td>${img}</td>
+          <td style="color:var(--mut)">${i.id}</td>
+          <td class="font-bold">${bdg}${i.name}</td>
+          <td style="color:var(--ct)">${i.category||''}</td>
+          <td class="font-bold">${i.remaining}</td>
+          <td>${iss}</td>
+          <td class="text-center">
+            <button onclick="U.openAct('${i.id}','out')" class="px-2 py-1 rounded text-xs" style="background:rgba(59,130,246,.15);color:var(--ct)">ניפוק</button>
+            <button onclick="U.openAct('${i.id}','in')" class="px-2 py-1 rounded text-xs mx-1" style="background:rgba(34,197,94,.15);color:var(--cr)">+</button>
+            <button onclick="U.openItemModal('${i.id}')" class="px-2 py-1 rounded text-xs" style="background:var(--bg);color:var(--mut)">⚙️</button>
+          </td>
+        </tr>`;
+      }).join('')+`</tbody></table>`:`<div class="text-center py-16" style="color:var(--mut)">אין פריטים להצגה</div>`;
+    } else {
+      document.getElementById('igrid').className="grid gap-3";
+      document.getElementById('igrid').style.border="none";
+      document.getElementById('igrid').innerHTML=list.length?list.map(i=>{
+        const iss=S.d.transactions.filter(t=>t.item===i.name).reduce((s,t)=>s+(parseInt(t.quantity)||0),0);
+        const min=i.minStock||0;
+        let bdg='';if(i.remaining===0)bdg='<span class="bdg bz">אזל!</span>';else if(i.remaining<=min)bdg='<span class="bdg bl">נמוך</span>';
+        const img=i.img?`<img src="${i.img}" onclick="U.lb('${i.img}')" class="h-16 w-16 mx-auto rounded-lg object-cover mb-2 cursor-pointer block hover:opacity-80 transition-opacity">`:`<div class="h-16 w-16 mx-auto rounded-lg mb-2 flex items-center justify-center text-2xl font-black" style="background:#1e2333;color:var(--mut)">${i.name[0]||'?'}</div>`;
+        return `<div class="rounded-xl p-3 text-center relative transition-all hover:-translate-y-0.5 hover:shadow-lg" style="background:var(--card);border:1px solid var(--brd)">
+          ${bdg}${img}
+          <div class="font-bold text-white text-xs truncate mb-0.5">${i.name}</div>
+          <div class="text-xs mb-2" style="color:var(--ct)">${i.category||''}</div>
+          <div class="flex justify-around text-xs border-t pt-2 mb-2" style="border-color:var(--brd);color:var(--mut)">
+            <div>מלאי<br><b class="text-white text-sm">${i.remaining}</b></div>
+            <div>הונפק<br><b class="text-white text-sm">${iss}</b></div>
+          </div>
+          <div class="flex gap-1">
+            <button onclick="U.openAct('${i.id}','out')" class="flex-1 py-1.5 rounded-lg text-xs font-bold" style="background:rgba(59,130,246,.15);color:var(--ct);border:1px solid rgba(59,130,246,.3)">ניפוק</button>
+            <button onclick="U.openAct('${i.id}','in')" class="px-2.5 py-1.5 rounded-lg font-bold" style="background:rgba(34,197,94,.15);color:var(--cr);border:1px solid rgba(34,197,94,.3)">+</button>
+            <button onclick="U.openItemModal('${i.id}')" class="px-2 py-1.5 rounded-lg" style="background:var(--bg);color:var(--mut);border:1px solid var(--brd)">⚙️</button>
+          </div>
+        </div>`;
+      }).join(''):`<div class="col-span-full text-center py-16" style="color:var(--mut)">אין פריטים להצגה</div>`;
+    }
   },
+  setLogFlt(type,f,v){this.logFlt[type][f]=v;this.rl(type,type==='Transactions'?'bt':'br');},
   rl(type,tid){
-    const list=S.d[type.toLowerCase()];
-    document.getElementById(tid).innerHTML=list.length?list.map((e,idx)=>{
+    const isTx=type==='Transactions';
+    const q=document.getElementById(isTx?'srchTx':'srchRe').value.toLowerCase();
+    let list=[...S.d[type.toLowerCase()]];
+    if(q) list=list.filter(e=>e.item.toLowerCase().includes(q)||e.date.includes(q)||(e.employee||'').toLowerCase().includes(q)||(e.notes||'').toLowerCase().includes(q));
+    
+    // Dropdowns Header
+    const uEmp=[...new Set(list.map(e=>e.employee||''))].filter(Boolean);
+    const uItm=[...new Set(list.map(e=>e.item))];
+    
+    const fe=this.logFlt[type].emp||'';
+    const fi=this.logFlt[type].itm||'';
+    if(fe) list=list.filter(e=>e.employee===fe);
+    if(fi) list=list.filter(e=>e.item===fi);
+
+    if(isTx){
+      document.getElementById('thEmpTx').innerHTML=`<select class="hdr-sel" onchange="U.setLogFlt('${type}','emp',this.value)"><option value="">עובד 🔽</option>${uEmp.map(x=>`<option value="${x}" ${x===fe?'selected':''}>${x}</option>`).join('')}</select>`;
+      document.getElementById('thItmTx').innerHTML=`<select class="hdr-sel" onchange="U.setLogFlt('${type}','itm',this.value)"><option value="">פריט 🔽</option>${uItm.map(x=>`<option value="${x}" ${x===fi?'selected':''}>${x}</option>`).join('')}</select>`;
+    } else {
+      document.getElementById('thItmRe').innerHTML=`<select class="hdr-sel" onchange="U.setLogFlt('${type}','itm',this.value)"><option value="">פריט 🔽</option>${uItm.map(x=>`<option value="${x}" ${x===fi?'selected':''}>${x}</option>`).join('')}</select>`;
+    }
+
+    document.getElementById(tid).innerHTML=list.length?list.map((e)=>{
+      const idx=S.d[type.toLowerCase()].indexOf(e);
       const it=S.d.items.find(i=>i.name===e.item);
       const img=it?.img?`<img src="${it.img}" onclick="U.lb('${it.img}')" class="h-8 w-8 rounded object-cover cursor-pointer mx-auto hover:opacity-80">`:'';
-      const ec=type==='Transactions'?`<td><input class="ti w-28" value="${e.employee||''}" onchange="A.eLog('${type}',${idx},'employee',this.value)"></td>`:'';
-      const qc=type==='Transactions'?'var(--ct)':'var(--cr)';
+      const ec=isTx?`<td><input class="ti w-28" value="${e.employee||''}" onchange="A.eLog('${type}',${idx},'employee',this.value)"></td>`:'';
+      const qc=isTx?'var(--ct)':'var(--cr)';
       return `<tr>
         <td class="text-center">${img}</td>
         <td><input class="ti w-24" value="${e.date}" onchange="A.eLog('${type}',${idx},'date',this.value)"></td>
@@ -205,17 +322,21 @@ const U={
     }).join(''):`<tr><td colspan="7" class="text-center py-10" style="color:var(--mut)">אין רשומות</td></tr>`;
   },
   rls(key,lid,isCat){
-    const color=isCat?'var(--cc)':'var(--ce)';
-    document.getElementById(lid).innerHTML=S.d[key].map(val=>{
+    const q=document.getElementById(isCat?'srchCat':'srchEmp').value.toLowerCase();
+    const arr=S.d[key].filter(v=>v.toLowerCase().includes(q));
+    document.getElementById(lid).innerHTML=arr.map(val=>{
       const cnt=isCat?S.d.items.filter(i=>i.category===val).length:S.d.transactions.filter(t=>t.employee===val).length;
-      return `<div class="flex items-center justify-between p-3 rounded-xl transition-all" style="background:var(--card);border:1px solid var(--brd)" onmouseenter="this.style.borderColor='#3a4460'" onmouseleave="this.style.borderColor='var(--brd)'">
+      return `<div class="flex items-center justify-between p-3 rounded-xl transition-all" style="background:var(--card);border:1px solid var(--brd)">
         <div>
           <div class="font-bold text-white text-sm">${val}</div>
           <div class="text-xs mt-0.5" style="color:var(--mut)">${cnt} ${isCat?'פריטים':'ניפוקים'}</div>
         </div>
-        <button onclick="A.removeList('${key}','${val}')" style="background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;padding:2px 8px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--mut)'">×</button>
+        <div>
+          <button onclick="A.editList('${key}','${val}')" style="background:none;border:none;color:var(--mut);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='var(--txt)'" onmouseleave="this.style.color='var(--mut)'">✏️</button>
+          <button onclick="A.removeList('${key}','${val}')" style="background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--mut)'">×</button>
+        </div>
       </div>`;
-    }).join('')||`<div class="col-span-full text-center py-10" style="color:var(--mut)">לא נמצאו פריטים</div>`;
+    }).join('')||`<div class="col-span-full text-center py-10" style="color:var(--mut)">לא נמצאו תוצאות</div>`;
   },
   udl(){
     document.getElementById('iCat').innerHTML=S.d.subCategories.map(c=>`<option value="${c}">${c}</option>`).join('');
@@ -227,6 +348,7 @@ const U={
     document.getElementById('iName').value=it?it.name:'';
     document.getElementById('iId').value=it?it.id:'';
     document.getElementById('iStock').value=it?it.remaining:'';
+    document.getElementById('iMinStock').value=it?.minStock||'';
     document.getElementById('iImg').value='';
     this.udl();
     document.getElementById('iCat').value=it?it.category:S.d.subCategories[0];
@@ -249,6 +371,36 @@ const U={
   lb(src){document.getElementById('lbI').src=src;document.getElementById('mLB').classList.add('on');}
 };
 const A={
+  exportJson(){
+    const dataStr="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(S.d));
+    const dl=document.createElement('a');
+    dl.setAttribute("href",dataStr);
+    dl.setAttribute("download","sharara-backup-"+new Date().toISOString().split('T')[0]+".json");
+    dl.click();
+    T.show('קובץ יוצא בהצלחה');
+  },
+  importJson(e){
+    const file=e.target.files[0];
+    if(!file)return;
+    const r=new FileReader();
+    r.onload=function(e){
+      try{
+        const data=JSON.parse(e.target.result);
+        if(!data.items || !data.transactions){T.show('קובץ לא תקין','er');return;}
+        if(confirm('האם אתה בטוח שברצונך לדרוס את כל הנתונים בנתונים מהקובץ? פעולה זו לא ניתנת לביטול!')){
+          S.d=data;S.save(false);R.refresh();T.show('נתונים יובאו בהצלחה');
+        }
+      }catch(err){T.show('שגיאה בקריאת הקובץ','er');}
+      document.getElementById('impFile').value='';
+    };
+    r.readAsText(file);
+  },
+  dragSt(e,c){e.dataTransfer.setData('text/plain',c);},
+  drop(e,tgt){
+    e.preventDefault();const src=e.dataTransfer.getData('text/plain');if(src===tgt||tgt==='הכל')return;
+    const a=S.d.subCategories;const i1=a.indexOf(src),i2=a.indexOf(tgt);
+    if(i1>-1&&i2>-1){a.splice(i1,1);a.splice(i2,0,src);S.save(false);U.rf();}
+  },
   saveItem(){
     const key=document.getElementById('eKey').value;
     const file=document.getElementById('iImg').files[0];
@@ -256,7 +408,8 @@ const A={
       id:document.getElementById('iId').value.trim(),
       name:document.getElementById('iName').value.trim(),
       category:document.getElementById('iCat').value,
-      remaining:parseInt(document.getElementById('iStock').value)||0
+      remaining:parseInt(document.getElementById('iStock').value)||0,
+      minStock:parseInt(document.getElementById('iMinStock').value)||0
     };
     if(!data.name||!data.id){T.show('נא למלא שם ומזהה','er');return;}
     const finalize=img=>{
@@ -322,6 +475,22 @@ const A={
     S.save();S.d[key].push(val);
     document.getElementById(inputId).value='';
     S.save(false);R.refresh();T.show('נוסף בהצלחה');
+  },
+  editList(key,oldVal){
+    const newVal=prompt('ערוך שם:',oldVal);
+    if(!newVal||newVal.trim()===''||newVal===oldVal)return;
+    const val=newVal.trim();
+    if(S.d[key].includes(val)){T.show('שם כבר קיים','er');return;}
+    S.save();
+    const idx=S.d[key].indexOf(oldVal);
+    if(idx>-1)S.d[key][idx]=val;
+    if(key==='subCategories'){
+      S.d.items.forEach(i=>{if(i.category===oldVal)i.category=val;});
+      if(U.sel===oldVal)U.sel=val;
+    } else {
+      S.d.transactions.forEach(t=>{if(t.employee===oldVal)t.employee=val;});
+    }
+    S.save(false);R.refresh();T.show('עודכן בהצלחה');
   },
   removeList(key,val){
     if(!confirm(`למחוק "${val}"?`))return;
