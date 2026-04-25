@@ -99,8 +99,9 @@ td{padding:9px 12px;vertical-align:middle}
     
     <div id="vi-Categories" class="vw p-5">
       <div class="flex gap-2 mb-5 max-w-md items-center">
+        <input type="color" id="nCatColor" value="#a855f7" class="!p-0 !w-10 !h-10 !rounded-full overflow-hidden cursor-pointer flex-shrink-0" style="border:none!important">
         <input id="nCat" placeholder="קטגוריה חדשה...">
-        <button onclick="A.addList('subCategories','nCat')" class="px-5 py-2 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--cc)">הוסף</button>
+        <button onclick="A.addList('subCategories','nCat','nCatColor')" class="px-5 py-2 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--cc)">הוסף</button>
         <div class="flex-1"></div>
         <input id="srchCat" type="search" placeholder="חיפוש קטגוריה..." oninput="U.rls('subCategories','lCat',true)" class="!w-40 !text-xs">
       </div>
@@ -109,8 +110,9 @@ td{padding:9px 12px;vertical-align:middle}
     
     <div id="vi-Employees" class="vw p-5">
       <div class="flex gap-2 mb-5 max-w-md items-center">
+        <input type="color" id="nEmpColor" value="#f97316" class="!p-0 !w-10 !h-10 !rounded-full overflow-hidden cursor-pointer flex-shrink-0" style="border:none!important">
         <input id="nEmp" placeholder="עובד חדש...">
-        <button onclick="A.addList('employees','nEmp')" class="px-5 py-2 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--ce)">הוסף</button>
+        <button onclick="A.addList('employees','nEmp','nEmpColor')" class="px-5 py-2 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--ce)">הוסף</button>
         <div class="flex-1"></div>
         <input id="srchEmp" type="search" placeholder="חיפוש עובד..." oninput="U.rls('employees','lEmp',false)" class="!w-40 !text-xs">
       </div>
@@ -164,7 +166,8 @@ const S={
     transactions:JSON.parse(localStorage.getItem('transactions'))||[],
     restocks:JSON.parse(localStorage.getItem('restocks'))||[],
     employees:JSON.parse(localStorage.getItem('employees'))||['עזאם שרארה'],
-    subCategories:JSON.parse(localStorage.getItem('subCategories'))||['כללי']
+    subCategories:JSON.parse(localStorage.getItem('subCategories'))||['כללי'],
+    colors:JSON.parse(localStorage.getItem('colors'))||{}
   },
   un:[],re:[],
   save(snap=true){
@@ -221,7 +224,11 @@ const U={
   },
   rf(){
     document.getElementById('fbar').innerHTML=
-      ['הכל',...S.d.subCategories].map(c=>`<div ${c!=='הכל'?'draggable="true" ondragstart="A.dragSt(event,\''+c+'\')" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');A.drop(event,\''+c+'\')"':''} onclick="U.sel='${c}';U.ri()" class="pill${this.sel===c?' on':''}">${c}</div>`).join('');
+      ['הכל',...S.d.subCategories].map(c=>{
+        const color=S.d.colors[c];
+        const style=this.sel===c?(color?`background:${color};border-color:${color};color:#000`:''):(color?`color:${color};border-color:${color}`:'');
+        return `<div ${c!=='הכל'?'draggable="true" ondragstart="A.dragSt(event,\''+c+'\')" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');A.drop(event,\''+c+'\')"':''} onclick="U.sel='${c}';U.ri()" class="pill${this.sel===c?' on':''}" style="${style}">${c}</div>`;
+      }).join('');
   },
   ri(){
     const q=document.getElementById('srch').value.toLowerCase();
@@ -247,7 +254,7 @@ const U={
           <td>${img}</td>
           <td style="color:var(--mut)">${i.id}</td>
           <td class="font-bold">${bdg}${i.name}</td>
-          <td style="color:var(--ct)">${i.category||''}</td>
+          <td style="color:${S.d.colors[i.category]||'var(--ct)'};font-weight:bold">${i.category||''}</td>
           <td class="font-bold">${i.remaining}</td>
           <td>${iss}</td>
           <td class="text-center">
@@ -269,7 +276,7 @@ const U={
         return `<div class="rounded-xl p-3 text-center relative transition-all hover:-translate-y-0.5 hover:shadow-lg" style="background:var(--card);border:1px solid var(--brd)">
           ${bdg}${img}
           <div class="font-bold text-white text-xs truncate mb-0.5">${i.name}</div>
-          <div class="text-xs mb-2" style="color:var(--ct)">${i.category||''}</div>
+          <div class="text-xs mb-2" style="color:${S.d.colors[i.category]||'var(--ct)'};font-weight:bold">${i.category||''}</div>
           <div class="flex justify-around text-xs border-t pt-2 mb-2" style="border-color:var(--brd);color:var(--mut)">
             <div>מלאי<br><b class="text-white text-sm">${i.remaining}</b></div>
             <div>הונפק<br><b class="text-white text-sm">${iss}</b></div>
@@ -310,13 +317,13 @@ const U={
       const idx=S.d[type.toLowerCase()].indexOf(e);
       const it=S.d.items.find(i=>i.name===e.item);
       const img=it?.img?`<img src="${it.img}" onclick="U.lb('${it.img}')" class="h-8 w-8 rounded object-cover cursor-pointer mx-auto hover:opacity-80">`:'';
-      const ec=isTx?`<td><input class="ti w-28" value="${e.employee||''}" onchange="A.eLog('${type}',${idx},'employee',this.value)"></td>`:'';
+      const ec=isTx?`<td><input class="ti w-28" style="color:${S.d.colors[e.employee]||'var(--txt)'};font-weight:bold" value="${e.employee||''}" onchange="A.eLog('${type}',${idx},'employee',this.value)"></td>`:'';
       const qc=isTx?'var(--ct)':'var(--cr)';
       return `<tr>
         <td class="text-center">${img}</td>
         <td><input class="ti w-24" value="${e.date}" onchange="A.eLog('${type}',${idx},'date',this.value)"></td>
         ${ec}
-        <td class="font-bold">${e.item}</td>
+        <td class="font-bold" style="color:${S.d.colors[it?.category]||'inherit'}">${e.item}</td>
         <td><input type="number" class="ti w-16 font-bold" style="color:${qc}" value="${e.quantity}" onchange="A.eLog('${type}',${idx},'quantity',this.value)"></td>
         <td><input class="ti text-xs" style="font-style:italic" value="${e.notes||''}" onchange="A.eLog('${type}',${idx},'notes',this.value)"></td>
         <td class="text-center"><button onclick="A.dLog('${type}',${idx})" style="background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer;padding:3px 8px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--mut)'">×</button></td>
@@ -328,12 +335,14 @@ const U={
     const arr=S.d[key].filter(v=>v.toLowerCase().includes(q));
     document.getElementById(lid).innerHTML=arr.map(val=>{
       const cnt=isCat?S.d.items.filter(i=>i.category===val).length:S.d.transactions.filter(t=>t.employee===val).length;
-      return `<div class="flex items-center justify-between p-3 rounded-xl transition-all" style="background:var(--card);border:1px solid var(--brd)">
+      const c=S.d.colors[val]||(isCat?'var(--cc)':'var(--ce)');
+      return `<div class="flex items-center justify-between p-3 rounded-xl transition-all" style="background:var(--card);border:1px solid ${c};border-right:4px solid ${c}">
         <div>
           <div class="font-bold text-white text-sm">${val}</div>
           <div class="text-xs mt-0.5" style="color:var(--mut)">${cnt} ${isCat?'פריטים':'ניפוקים'}</div>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
+          <input type="color" value="${c.startsWith('var')?'#ffffff':c}" onchange="A.changeColor('${val}',this.value)" class="w-6 h-6 rounded cursor-pointer" style="padding:0;border:none;background:transparent">
           <button onclick="A.editList('${key}','${val}')" style="background:none;border:none;color:var(--mut);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='var(--txt)'" onmouseleave="this.style.color='var(--mut)'">✏️</button>
           <button onclick="A.removeList('${key}','${val}')" style="background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:.2s" onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--mut)'">×</button>
         </div>
@@ -366,6 +375,13 @@ const U={
     document.getElementById('empW').style.display=mode==='out'?'':'none';
     document.getElementById('aDate').valueAsDate=new Date();
     document.getElementById('aQty').value='';
+    if(mode==='out'){
+      document.getElementById('aQty').max=it.remaining;
+      document.getElementById('aQty').placeholder=`עד ${it.remaining}`;
+    }else{
+      document.getElementById('aQty').removeAttribute('max');
+      document.getElementById('aQty').placeholder='0';
+    }
     document.getElementById('aNotes').value='';
     document.getElementById('mAct').classList.add('on');
   },
@@ -470,11 +486,18 @@ const A={
     list.splice(idx,1);
     S.save(false);R.refresh();T.show('רשומה נמחקה');
   },
-  addList(key,inputId){
+  changeColor(val,color){
+    S.save();
+    S.d.colors[val]=color;
+    S.save(false);R.refresh();
+  },
+  addList(key,inputId,colorId){
     const val=document.getElementById(inputId).value.trim();
+    const color=document.getElementById(colorId)?.value;
     if(!val||typeof val!=='string'){T.show('ערך לא תקין','er');return;}
     if(S.d[key].includes(val)){T.show('כבר קיים','er');return;}
     S.save();S.d[key].push(val);
+    if(color) S.d.colors[val]=color;
     document.getElementById(inputId).value='';
     S.save(false);R.refresh();T.show('נוסף בהצלחה');
   },
@@ -486,6 +509,7 @@ const A={
     S.save();
     const idx=S.d[key].indexOf(oldVal);
     if(idx>-1)S.d[key][idx]=val;
+    if(S.d.colors[oldVal]){S.d.colors[val]=S.d.colors[oldVal];delete S.d.colors[oldVal];}
     if(key==='subCategories'){
       S.d.items.forEach(i=>{if(i.category===oldVal)i.category=val;});
       if(U.sel===oldVal)U.sel=val;
