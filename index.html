@@ -68,6 +68,7 @@ td{padding:9px 12px;vertical-align:middle}
     <div id="vi-Transactions" class="vw">
       <div class="flex items-center gap-3 p-4 border-b" style="border-color:var(--brd);background:var(--card)">
         <input id="srchTx" type="search" placeholder="חיפוש ביומן ניפוקים..." oninput="U.rl('Transactions','bt')" class="!w-64 !text-xs">
+        <button onclick="A.exportLog('Transactions')" class="text-xs px-3 py-1.5 rounded-lg font-bold transition-all hover:brightness-125" style="background:var(--card);border:1px solid var(--brd);color:var(--ct)">📥 ייצוא לאקסל</button>
       </div>
       <div class="m-5 rounded-xl overflow-hidden" style="border:1px solid var(--brd)">
         <table class="w-full"><thead><tr>
@@ -138,6 +139,7 @@ td{padding:9px 12px;vertical-align:middle}
   </div>
   <div class="flex gap-2 mt-5">
     <button onclick="A.saveItem()" class="flex-1 py-2.5 rounded-lg font-bold text-white hover:brightness-110" style="background:var(--cr)">שמור</button>
+    <button id="btnDelItem" onclick="A.deleteItem()" class="px-4 py-2.5 rounded-lg font-semibold text-white hover:brightness-110" style="background:#ef4444;display:none">מחק פריט</button>
     <button onclick="U.cm()" class="flex-1 py-2.5 rounded-lg font-semibold" style="background:#1e2333;color:var(--txt)">ביטול</button>
   </div>
 </div></div>
@@ -191,7 +193,6 @@ const S={
 };
 
 const T={show(m,t='ok'){const e=document.createElement('div');e.className='tm '+t;e.textContent=m;document.getElementById('toast').appendChild(e);setTimeout(()=>e.remove(),2600);}};
-
 const VIEWS={
   Items:       {title:'📦 ניהול פריטים', color:'var(--ci)',showNew:true},
   Transactions:{title:'📑 יומן ניפוקים',color:'var(--ct)',showNew:false},
@@ -240,7 +241,7 @@ const U={
       const sty=this.mSel===m?'background:var(--card);border-color:var(--ci);color:var(--ci)':'background:transparent;border-color:var(--brd);color:var(--mut)';
       return `<div onclick="U.mSel='${m}';U.sel='הכל';U.ri();U.rf()" class="pill" style="padding:6px 16px;border-width:2px;${sty}">${m}</div>`;
     }).join('');
-    
+
     if(this.mSel==='הכל'){
       document.getElementById('fbarSub').style.display='none';
     }else{
@@ -264,11 +265,11 @@ const U={
       list=list.filter(i=>allowedSubs.includes(i.category));
       if(this.sel!=='הכל') list=list.filter(i=>i.category===this.sel);
     }
-    
+
     if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
     if(so==='sl')list.sort((a,b)=>a.remaining-b.remaining);
     if(so==='sh')list.sort((a,b)=>b.remaining-a.remaining);
-    
+
     if(this.vMode==='list'){
       document.getElementById('igrid').className="rounded-xl overflow-hidden";
       document.getElementById('igrid').style.gridTemplateColumns="";
@@ -281,7 +282,7 @@ const U={
         return `<tr>
           <td>${img}</td>
           <td style="color:var(--mut)">${i.id}</td>
-          <td class="font-bold">${bdg}${i.name}</td>
+          <td class="font-bold">${bdg}${i.name} <span class="text-xs text-slate-500">(${i.id})</span></td>
           <td style="color:${S.d.colors[i.category]||'var(--ct)'};font-weight:bold">${i.category||''}</td>
           <td class="font-bold">${i.remaining}</td>
           <td>${iss}</td>
@@ -303,7 +304,7 @@ const U={
         const img=i.img?`<img src="${i.img}" onclick="U.lb('${i.img}')" class="h-16 w-16 mx-auto rounded-lg object-cover mb-2 cursor-pointer block hover:opacity-80 transition-opacity">`:`<div class="h-16 w-16 mx-auto rounded-lg mb-2 flex items-center justify-center text-2xl font-black" style="background:#1e2333;color:var(--mut)">${i.name[0]||'?'}</div>`;
         return `<div class="rounded-xl p-3 text-center relative transition-all hover:-translate-y-0.5 hover:shadow-lg" style="background:var(--card);border:1px solid var(--brd)">
           ${bdg}${img}
-          <div class="font-bold text-white text-xs truncate mb-0.5">${i.name}</div>
+          <div class="font-bold text-white text-xs truncate mb-0.5">${i.name} <span class="text-[10px] text-slate-500">(${i.id})</span></div>
           <div class="text-xs mb-2" style="color:${S.d.colors[i.category]||'var(--ct)'};font-weight:bold">${i.category||''}</div>
           <div class="flex justify-around text-xs border-t pt-2 mb-2" style="border-color:var(--brd);color:var(--mut)">
             <div>מלאי<br><b class="text-white text-sm">${i.remaining}</b></div>
@@ -415,15 +416,22 @@ const U={
     const subs=S.d.subCategories[curMain]||[];
     document.getElementById('iCat').innerHTML=subs.map(c=>`<option value="${c}">${c}</option>`).join('');
   },
+  getNextId(){
+    const ids = S.d.items.map(i=>parseInt(i.id)).filter(id=>!isNaN(id));
+    if (ids.length === 0) return '1';
+    return (Math.max(...ids) + 1).toString();
+  },
   openItemModal(id=null){
     const it=S.d.items.find(i=>i.id===id);
     document.getElementById('eKey').value=id||'';
     document.getElementById('iName').value=it?it.name:'';
-    document.getElementById('iId').value=it?it.id:'';
+    document.getElementById('iId').value=it?it.id:U.getNextId();
     document.getElementById('iStock').value=it?it.remaining:'';
     document.getElementById('iMinStock').value=it?.minStock||'';
     document.getElementById('iImg').value='';
-    
+
+    document.getElementById('btnDelItem').style.display=id?'block':'none';
+
     let foundMain='כללי';
     if(it){
       for(const m in S.d.subCategories) if(S.d.subCategories[m].includes(it.category)){foundMain=m;break;}
@@ -432,7 +440,7 @@ const U={
     document.getElementById('iMainCat').value=foundMain;
     this.udl(true);
     document.getElementById('iCat').value=it?it.category:'';
-    
+
     document.getElementById('mItem').classList.add('on');
   },
   openAct(id,mode){
@@ -454,6 +462,26 @@ const U={
   lb(src){document.getElementById('lbI').src=src;document.getElementById('mLB').classList.add('on');}
 };
 const A={
+  exportLog(type){
+    const list = S.d[type.toLowerCase()];
+    if(!list.length){T.show('אין נתונים לייצוא','er');return;}
+    let csv = '\ufeffתאריך,עובד,פריט,כמות,הערות\n';
+    list.forEach(r => {
+      csv += `"${r.date}","${r.employee||''}","${r.item}","${r.quantity}","${r.notes||''}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${type}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  },
+  deleteItem(){
+    const id=document.getElementById('eKey').value;
+    if(!confirm('האם למחוק פריט זה? פעולה זו אינה ניתנת לביטול.')) return;
+    S.save();
+    S.d.items = S.d.items.filter(i=>i.id!==id);
+    S.save(false);U.cm();R.refresh();T.show('הפריט נמחק');
+  },
   exportJson(){
     const dataStr="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(S.d));
     const dlAnchorElem=document.createElement('a');
@@ -483,11 +511,11 @@ const A={
     if(isNaN(stock)) stock=0;
     if(isNaN(minStock)) minStock=0;
     if(!name){T.show('יש להזין שם פריט','er');return;}
-    
+
     const k=document.getElementById('eKey').value;
     if(!k && S.d.items.find(i=>i.id===id)){T.show('ID כבר קיים','er');return;}
     S.save();
-    
+
     const iImg=document.getElementById('iImg');
     const commit=(imgSrc)=>{
       if(k){
@@ -504,7 +532,7 @@ const A={
       }
       S.save(false);U.cm();R.refresh();T.show(k?'עודכן בהצלחה':'נוסף בהצלחה');
     };
-    
+
     if(iImg.files[0]){const r=new FileReader();r.onload=e=>commit(e.target.result);r.readAsDataURL(iImg.files[0]);}
     else commit(null);
   },
@@ -513,7 +541,7 @@ const A={
     const qty=parseInt(document.getElementById('aQty').value);
     const notes=document.getElementById('aNotes').value.trim();
     if(!date||isNaN(qty)||qty<=0){T.show('נתונים חסרים','er');return;}
-    
+
     S.save();
     const it=S.d.items.find(i=>i.id===U.aid);
     if(U.mode==='out'){
@@ -640,3 +668,4 @@ window.onload=()=>{
   R.go('Items');
 };
 </script></body></html>
+
